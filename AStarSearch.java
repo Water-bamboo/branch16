@@ -206,6 +206,7 @@ public class AStarSearch {
 					System.out.println();
 					System.out.println();
 				}
+				((PuzzleState)(root.getCurState())).printStateInline();
 				System.out.println("Use asm_than_aso("+asm_and_aso+"), the cost was: " + tempNode.getCost());
 				if (d)
 				{

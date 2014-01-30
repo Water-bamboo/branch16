@@ -24,7 +24,7 @@ public class ProblemSolver
 			int[] initBoard = new int[16];
 			if (args.length == 2) {
 				//generate 16 random number
-				Random r = new Random(15);
+				Random r = new Random();
 				
 				int index = 0;
 				do {
@@ -39,7 +39,7 @@ public class ProblemSolver
 					}
 					if (duplicate == false) {
 						initBoard[index++] = x;
-					}					
+					}
 				} while(index < 15);
 			}
 			else if (args.length == 17) {
