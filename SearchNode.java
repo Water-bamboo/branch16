@@ -9,8 +9,8 @@
 public class SearchNode
 {
 
-	private State curState;
-	private SearchNode parent;
+	public PuzzleState curState;
+	public SearchNode parent;
 	private double cost; // cost to get to this state
 	private double hCost; // heuristic cost
 	private double fCost; // f(n) cost
@@ -21,7 +21,7 @@ public class SearchNode
 	 * @param s
 	 *            the state passed in
 	 */
-	public SearchNode(State s)
+	public SearchNode(PuzzleState s)
 	{
 		curState = s;
 		parent = null;
@@ -42,29 +42,13 @@ public class SearchNode
 	 * @param h
 	 *            the h(n) cost to get to this node
 	 */
-	public SearchNode(SearchNode prev, State s, double c, double h)
+	public SearchNode(SearchNode prev, PuzzleState s, double c)
 	{
 		parent = prev;
 		curState = s;
 		cost = c;
-		hCost = h;//how many movements to get to this node just like a Weigh.
+		hCost = s.outOfPlace;//how many movements to get to this node just like a Weigh.
 		fCost = cost + hCost;
-	}
-
-	/**
-	 * @return the curState
-	 */
-	public State getCurState()
-	{
-		return curState;
-	}
-
-	/**
-	 * @return the parent
-	 */
-	public SearchNode getParent()
-	{
-		return parent;
 	}
 
 	/**

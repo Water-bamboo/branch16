@@ -21,8 +21,9 @@ public class ProblemSolver
 		boolean debug = true;
 
 		if (args.length > 1) {
-			int[] initBoard = new int[16];
+			int[] initBoard = new int[] {0, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2};
 			if (args.length == 2) {
+				/*
 				//generate 16 random number
 				Random r = new Random();
 				
@@ -41,6 +42,7 @@ public class ProblemSolver
 						initBoard[index++] = x;
 					}
 				} while(index < 15);
+				*/
 			}
 			else if (args.length == 17) {
 				for (int i = 1; i < 17; i++)
@@ -64,7 +66,7 @@ public class ProblemSolver
 				// Use AStarSearch.java with Manhattan Distance
 				else if (searchType.equals("asm"))
 				{
-					AStarSearch.search(initBoard, debug, true);
+					AStarSearch.search(initBoard, debug, false);//can't use asm.
 				}
 				else {
 					printUsage();

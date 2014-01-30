@@ -29,7 +29,7 @@ public class AStarSearch {
 	public static void search(int[] board, boolean d, boolean asm_then_aso)
 	{
 		asm_and_aso = asm_then_aso;
-		SearchNode root = new SearchNode(new PuzzleState(board));
+		SearchNode root = new SearchNode(new PuzzleState(board, ' '));
 
 		openSetQueue.add(root);
 
@@ -39,7 +39,7 @@ public class AStarSearch {
 		while (!openSetQueue.isEmpty()) // while the queue is not empty
 		{
 			//hart:-begin-
-			double lowestHCost = ((SearchNode) openSetQueue.get(0)).getHCost();
+			double lowestHCost = openSetQueue.get(0).getHCost();
 			int lowestCostIndex = 0;
 			for (int i = 1; i < openSetQueue.size(); i++) {
 				if (openSetQueue.get(i).getHCost() < lowestHCost) {
@@ -48,44 +48,16 @@ public class AStarSearch {
 				}
 			}
 			
-			//found out the lowest out_of_place Node in all identical lowestHCost Node.
-			int debug_same_oop = 0;
-			if (asm_and_aso) {
-				int outofplace = ((PuzzleState)((SearchNode) openSetQueue.get(lowestCostIndex)).getCurState()).getOutOfPlace();
-				for (int i = 1; i < openSetQueue.size(); i++) {
-					final SearchNode sn = (SearchNode)openSetQueue.get(i);
-					if (sn.getHCost() == lowestHCost) {
-						if (((PuzzleState)sn.getCurState()).getOutOfPlace() < outofplace) {
-							lowestCostIndex = i;
-						}
-						debug_same_oop++;
-					}
-				}
-			}
-			else {
-				int outofplace = ((PuzzleState)((SearchNode) openSetQueue.get(lowestCostIndex)).getCurState()).getManDist();
-				for (int i = 1; i < openSetQueue.size(); i++) {
-					final SearchNode sn = (SearchNode)openSetQueue.get(i);
-					if (sn.getHCost() == lowestHCost) {
-						if (((PuzzleState)sn.getCurState()).getManDist() < outofplace) {
-							lowestCostIndex = i;
-						}
-						debug_same_oop++;
-					}
-				}
-			}
-			System.out.println("lowestHCost:"+lowestHCost+" have same_oop count="+debug_same_oop);
-			
 			SearchNode tempNode = (SearchNode) openSetQueue.remove(lowestCostIndex);
 			//hart: -end-
 			//SearchNode tempNode = (SearchNode) openSet.poll();
-			//closedSet.add(tempNode);
+			closedSet.add(tempNode);
 			
 			// if the tempNode is not the goal state
-			if (!tempNode.getCurState().isGoal())
+			if (!tempNode.curState.isGoal())
 			{
 				// generate tempNode's immediate successors
-				ArrayList<State> tempSuccessors = tempNode.getCurState().genSuccessors();
+				ArrayList<PuzzleState> tempSuccessors = tempNode.curState.genSuccessors();
 				System.out.println("-----------tempSuccessors.size="+tempSuccessors.size()+"-----------");
 				
 				//A* closeset??? seams not!!.
@@ -104,71 +76,22 @@ public class AStarSearch {
 					 * and the Out of Place h(n) value
 					 */
 
-					final State s = tempSuccessors.get(i);
-					s.printState();
-					System.out.println("For: tempSuccessors["+i+"].hole="+((PuzzleState)s).getHole());
-					System.out.println("For: s.getManDist()=============="+((PuzzleState) s).getManDist());
+					final PuzzleState s = tempSuccessors.get(i);
+					//s.printState();
+					System.out.println("For: tempSuccessors["+i+"].hole="+s.holeIndex);
 
-					// make the node
-					SearchNode checkedNode;
-					if (asm_and_aso) {
-						checkedNode = new SearchNode(tempNode, s, 
-									tempNode.getCost() + s.findCost(),
-									((PuzzleState) s).getManDist());
-					}
-					else {
-						checkedNode = new SearchNode(tempNode, s, 
-									tempNode.getCost() + s.findCost(),
-									((PuzzleState) s).getOutOfPlace());
-					}
+					SearchNode checkedNode = new SearchNode(tempNode, s, 
+									tempNode.getCost() + 1);//cos of tempNode to checkedNode.);//h
+
+					//just give up the repeated node is correct??
+					boolean isRepeated = checkRepeats_byclosedset(checkedNode);
+					//boolean isRepeated = checkRepeats(checkedNode);
 					
-					// Check for repeats before adding the new node
-					//boolean isRepeated = checkRepeats_byclosedset(closedSet, checkedNode);
-					boolean isRepeated = checkRepeats(checkedNode);
 					System.out.println("For: isRepeated="+isRepeated);
-					if (!isRepeated)
-					{
-						nodeSuccessors.add(checkedNode);
-					}
+					if (isRepeated) continue;
 					
-					if (false) {
-						try {
-							Thread.sleep(3000);
-						}
-						catch(InterruptedException e) {
-						}
-					}
-				}
-
-				// Check to see if nodeSuccessors is empty. If it is, continue
-				// the loop from the top
-				if (nodeSuccessors.size() == 0)
-					continue;
-
-				SearchNode lowestNode = nodeSuccessors.get(0);
-
-				/*
-				 * This loop finds the lowest f(n) in a node, and then sets that
-				 * node as the lowest.
-				 */
-				for (int i = 0; i < nodeSuccessors.size(); i++)
-				{
-					if (lowestNode.getFCost() > nodeSuccessors.get(i).getFCost())
-					{
-						lowestNode = nodeSuccessors.get(i);
-					}
-				}
-
-				int lowestValue = (int) lowestNode.getFCost();
-
-				// Adds any nodes that have that same lowest value. [Note: there may exist more than one node that has the same loweast value.]
-				for (int i = 0; i < nodeSuccessors.size(); i++)
-				{
-					final SearchNode sn = nodeSuccessors.get(i);
-					if (sn.getFCost() == lowestValue)
-					{
-						System.out.println("nodeSuccessor:["+i+"] is added to Queue.(man="+sn.getHCost()+")");
-						openSetQueue.add(sn);
+					if (!checkExist_InOpenset(checkedNode)) {
+						openSetQueue.add(checkedNode);
 					}
 				}
 
@@ -183,11 +106,11 @@ public class AStarSearch {
 				Stack<SearchNode> solutionPath = new Stack<SearchNode>();
 				//solutionPath.push(tempNode);
 
-				//System.out.println("tempNode.getParent()=" + tempNode.getParent());
-				while (tempNode.getParent() != null)
+				//System.out.println("tempNode.parent=" + tempNode.parent);
+				while (tempNode.parent != null)
 				{
 					solutionPath.push(tempNode);
-					tempNode = tempNode.getParent();
+					tempNode = tempNode.parent;
 					if (tempNode == null) 
 						break;
 				}
@@ -198,15 +121,22 @@ public class AStarSearch {
 
 				// The size of the stack before looping through and emptying it.
 				int loopSize = solutionPath.size();
-
+				/*
 				for (int i = 0; i < loopSize; i++)
 				{
 					tempNode = solutionPath.pop();
-					tempNode.getCurState().printState();
+					tempNode.curState.printState();
 					System.out.println();
 					System.out.println();
 				}
-				((PuzzleState)(root.getCurState())).printStateInline();
+				*/
+				for (int i = 0; i < loopSize; i++)
+				{
+					tempNode = solutionPath.pop();
+					System.out.print(tempNode.curState.from_direction);
+				}
+				System.out.println();
+				root.curState.printStateInline();
 				System.out.println("Use asm_than_aso("+asm_and_aso+"), the cost was: " + tempNode.getCost());
 				if (d)
 				{
@@ -236,19 +166,33 @@ public class AStarSearch {
 
 		// While n's parent isn't null, check to see if it's equal to the node
 		// we're looking for.
-		while (n.getParent() != null && !retValue)
+		while (n.parent != null && !retValue)
 		{
-			if (n.getParent().getCurState().equals(currentNode.getCurState()))
+			if (n.parent.curState.equals(currentNode.curState))
 			{
 				repeated_count++;
 				retValue = true;
 			}
-			n = n.getParent();
+			n = n.parent;
 		}
 
 		return retValue;
 	}
 	
+	private static boolean checkExist_InOpenset(SearchNode n) {
+		SearchNode currentNode = n;
+		int outOfPlace = n.curState.outOfPlace;
+		
+		final int size = openSetQueue.size();
+		
+		for (int i = size - 1; i >= 0; i--) {
+			if (openSetQueue.get(i).curState.outOfPlace == outOfPlace && openSetQueue.get(i).curState.equals(currentNode.curState))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 	/**
 	  * I think original algorithms maybe wrong, so add this another method for checking repeated.
 	  * check repeated by comparing to closeset.===this more similar to A* algorithms, and looks power than checkrepeat by parent.[Original algorithms]
@@ -256,14 +200,14 @@ public class AStarSearch {
 	*/
 	private static boolean checkRepeats_byclosedset(SearchNode n) {
 		SearchNode currentNode = n;
-		double currentHCost = n.getHCost();
+		int outOfPlace = n.curState.outOfPlace;
 
 		// While n's parent isn't null, check to see if it's equal to the node
 		// we're looking for.
 		final int size = closedSet.size();
 
 		for (int i = size - 1; i >= 0; i--) {
-			if (closedSet.get(i).getHCost() == currentHCost && closedSet.get(i).getCurState().equals(currentNode.getCurState()))
+			if (closedSet.get(i).curState.outOfPlace == outOfPlace && closedSet.get(i).curState.equals(currentNode.curState))
 			{
 				repeated_count++;
 				return true;
