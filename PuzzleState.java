@@ -3,7 +3,7 @@ import java.util.Arrays;
 
 /**
  * 
- * EightPuzzleState defines a state for the 8puzzle problem. The board is always
+ * PuzzleState defines a state for the 8puzzle problem. The board is always
  * represented by a single dimensioned array, we attempt to provide the illusion
  * that the state representation is 2 dimensional and this works very well. In
  * terms of the actual tiles, '0' represents the hole in the board, and 0 is
@@ -13,7 +13,7 @@ import java.util.Arrays;
  * @author Michael Langston && Gabe Ferrer
  * 
  */
-public class EightPuzzleState implements State
+public class PuzzleState implements State
 {
 	private int PUZZLE_ROW = 4;
 	private int PUZZLE_SIZE = 16;
@@ -34,12 +34,12 @@ public class EightPuzzleState implements State
 	private int[] curBoard;
 	
 	/**
-	 * Constructor for EightPuzzleState
+	 * Constructor for PuzzleState
 	 * 
 	 * @param board
 	 *            - the board representation for the new state to be constructed
 	 */
-	public EightPuzzleState(int[] board)
+	public PuzzleState(int[] board)
 	{
 		curBoard = board;
 		/*
@@ -54,7 +54,7 @@ public class EightPuzzleState implements State
 		else {
 			PUZZLE_ROW = 1;
 			PUZZLE_SIZE = 1;
-			System.out.println("EightPuzzleState argument error!!! board.length == "+board.length);
+			System.out.println("PuzzleState argument error!!! board.length == "+board.length);
 		}*/
 		setOutOfPlace();
 		setManDist();
@@ -234,7 +234,7 @@ public class EightPuzzleState implements State
 		int temp = cpy[d1];
 		cpy[d1] = curBoard[d2];
 		cpy[d2] = temp;
-		s.add((new EightPuzzleState(cpy)));
+		s.add((new PuzzleState(cpy)));
 	}
 
 	/**
@@ -307,7 +307,7 @@ public class EightPuzzleState implements State
 	@Override
 	public boolean equals(State s)
 	{
-		if (Arrays.equals(curBoard, ((EightPuzzleState) s).getCurBoard()))
+		if (Arrays.equals(curBoard, ((PuzzleState) s).getCurBoard()))
 		{
 			return true;
 		}

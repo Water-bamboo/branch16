@@ -1,12 +1,14 @@
+import java.util.Random;
+
 public class ProblemSolver
 {
-
 	/*
 	 * We expect arguments in the form:
 	 * 
-	 * ./ProblemSolver <-d> dfs/bfs/aso/asm <initial state> <optional parameter>
+	 * ./ProblemSolver <-d> aso/asm <initial state>
 	 * 
-	 * Example: ./ProblemSolver dfs 0 1 2 3 4 5 6 7 8
+	 * Example: ./ProblemSolver asm/aso 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+	 * Example: ./ProblemSolver asm/aso <if any letter, will generate random 16 number>
 	 * 
 	 * See Readme for more information.
 	 */
@@ -16,73 +18,61 @@ public class ProblemSolver
 		// of args will be in different locations if it is.
 		int searchTypeDebug = 0;
 		int eightPuzzleDebug = 1;
-		boolean debug = false;
+		boolean debug = true;
 
-		// Print out correct usage and end the program if there aren't any
-		// parameters
-		if (args.length < 1)
-		{
+		if (args.length > 1) {
+			int[] initBoard = new int[16];
+			if (args.length == 2) {
+				//generate 16 random number
+				Random r = new Random(15);
+				
+				int index = 0;
+				do {
+					int x = r.nextInt(16);
+					System.out.print(" ("+index+") x="+x);
+					boolean duplicate = false;
+					for (int i = 0; i < 16; i++) {
+						if (x == initBoard[i]) {
+							duplicate = true;
+							break;
+						}
+					}
+					if (duplicate == false) {
+						initBoard[index++] = x;
+					}					
+				} while(index < 15);
+			}
+			else if (args.length == 17) {
+				for (int i = 1; i < 17; i++)
+				{
+					initBoard[i-1] = Integer.parseInt(args[i]);
+				}
+			}
+			
+			System.out.println();
+			for (int i = 0; i < 16; i++) {
+				System.out.print(initBoard[i]+" | ");
+			}
+			System.out.println();
+			
+			if (true) {
+				String searchType = args[searchTypeDebug].toLowerCase();
+				if (searchType.equals("aso"))
+				{
+					AStarSearch.search(initBoard, debug, false);
+				}
+				// Use AStarSearch.java with Manhattan Distance
+				else if (searchType.equals("asm"))
+				{
+					AStarSearch.search(initBoard, debug, true);
+				}
+				else {
+					printUsage();
+				}
+			}
+		}
+		else {
 			printUsage();
-		}
-
-		// Check for debug toggle
-		if (args[0].equals("-d"))
-		{
-			searchTypeDebug = 1;
-			eightPuzzleDebug = 2;
-			debug = true;
-			System.out.println("Search Type passed in: "
-					+ args[searchTypeDebug].toLowerCase());
-		}
-
-		String searchType = args[searchTypeDebug].toLowerCase();
-
-		if (args.length > 2) // We will run with 8puzzle
-		{
-			int[] startingStateBoard = dispatchEightPuzzle(args,
-					eightPuzzleDebug);
-
-			if (searchType.equals("dfs")) // Use DFSearch.java
-			{
-				DFSearch.search(startingStateBoard, debug);
-			}
-			else if (searchType.equals("bfs")) // Use BFSearch.java
-			{
-				BFSearch.search(startingStateBoard, debug);
-			}
-			// Use AStarSearch.java with number out of place
-			else if (searchType.equals("aso"))
-			{
-				AStarSearch.searchAso(startingStateBoard, debug);
-			}
-			// Use AStarSearch.java with Manhattan Distance
-			else if (searchType.equals("asm"))
-			{
-				AStarSearch.searchAsm(startingStateBoard, debug);
-			}
-			// An invalid searchType has been passed in. Print correct usage and
-			// end the program.
-			else
-			{
-				printUsage();
-			}
-		}
-
-		else
-		// We will run with fwgc
-		{
-			if (searchType.equals("dfs")) // Use DFSearch.java
-			{
-				DFSearch.search(debug);
-			}
-			else if (searchType.equals("bfs")) // Use BFSearch.java
-			{
-				BFSearch.search(debug);
-			}
-			else
-			{
-				printUsage();
-			}
 		}
 	}
 
@@ -91,18 +81,5 @@ public class ProblemSolver
 	{
 		System.out.println("Usage: ./Main <searchType> [Initial Puzzle State]");
 		System.exit(-1);
-	}
-
-	// Helper method to build our initial 8puzzle state passed in through args
-	private static int[] dispatchEightPuzzle(String[] a, int d)
-	{
-		System.out.println("dispatchEightPuzzle: a.length="+a.length+",d="+d+". a.length-d="+(a.length-d));
-		int[] initState = new int[a.length - d];
-		// i -> loop counter
-		for (int i = d; i < a.length; i++)
-		{
-			initState[i - d] = Integer.parseInt(a[i]);
-		}
-		return initState;
 	}
 }
