@@ -22,6 +22,8 @@ public class ProblemSolver
 
 		if (args.length > 1) {
 			int[] initBoard = new int[] {0, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2};
+			//int[] initBoard = new int[] {2, 2, 1, 2, 2, 1, 2, 1, 1, 1, 1, 2, 1, 2, 0, 2};//21
+			//int[] initBoard = new int[] {2, 2, 2, 2, 1, 0, 1, 1, 1, 1, 2, 2, 1, 1, 2, 2};//12
 			if (args.length == 2) {
 				/*
 				//generate 16 random number

@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Stack;
+import java.io.FileOutputStream;
 
 /**
  * Defines an A* algorithms.
@@ -9,7 +10,6 @@ import java.util.Stack;
  * @author Water-bamboo.
  */
 public class AStarSearch {
-	static int repeated_count = 0;
 	static LinkedList<SearchNode> openSetQueue = new LinkedList<SearchNode>();
 	static ArrayList<SearchNode> closedSet = new ArrayList<SearchNode>();
 	
@@ -33,32 +33,47 @@ public class AStarSearch {
 
 		openSetQueue.add(root);
 
+		double lowestSolution = -1;
 		int searchCount = 1; // counter for number of iterations
 
 		//A* openset
 		while (!openSetQueue.isEmpty()) // while the queue is not empty
 		{
 			//hart:-begin-
-			double lowestHCost = openSetQueue.get(0).getHCost();
+			double lowestHCost = openSetQueue.get(0).getHCost();//Hcost can find result, but A* standard is Fcost
+			//double lowestCost = openSetQueue.get(0).getCost();
 			int lowestCostIndex = 0;
-			for (int i = 1; i < openSetQueue.size(); i++) {
+			int queueSize = openSetQueue.size();
+			for (int i = 1; i < queueSize; i++) {
 				if (openSetQueue.get(i).getHCost() < lowestHCost) {
 					lowestCostIndex = i;
-					lowestHCost = ((SearchNode) openSetQueue.get(i)).getHCost();
+					lowestHCost = openSetQueue.get(i).getHCost();
+					//lowestCost = openSetQueue.get(i).getCost();
 				}
 			}
 			
-			SearchNode tempNode = (SearchNode) openSetQueue.remove(lowestCostIndex);
+			/*
+			for (int i = 0; i < queueSize; i++) {
+				if (openSetQueue.get(i).getHCost() == lowestHCost) {
+				    if (openSetQueue.get(i).getCost() < lowestCost) {
+					    lowestCostIndex = i;
+						lowestCost = openSetQueue.get(i).getCost();
+					}
+				}
+			}*/
+			
+			SearchNode tempNode = openSetQueue.remove(lowestCostIndex);
 			//hart: -end-
 			//SearchNode tempNode = (SearchNode) openSet.poll();
-			closedSet.add(tempNode);
+			//closedSet.add(tempNode);
 			
 			// if the tempNode is not the goal state
 			if (!tempNode.curState.isGoal())
 			{
 				// generate tempNode's immediate successors
 				ArrayList<PuzzleState> tempSuccessors = tempNode.curState.genSuccessors();
-				System.out.println("-----------tempSuccessors.size="+tempSuccessors.size()+"-----------");
+				
+				//System.out.println("-----------tempSuccessors.size="+tempSuccessors.size()+"-----------");
 				
 				//A* closeset??? seams not!!.
 				ArrayList<SearchNode> nodeSuccessors = new ArrayList<SearchNode>();
@@ -75,23 +90,27 @@ public class AStarSearch {
 					 * tempNode's cost + the new cost (1) for this state,
 					 * and the Out of Place h(n) value
 					 */
+					if (tempNode.getCost() < 24) {
+						final PuzzleState s = tempSuccessors.get(i);
 
-					final PuzzleState s = tempSuccessors.get(i);
-					//s.printState();
-					System.out.println("For: tempSuccessors["+i+"].hole="+s.holeIndex);
-
-					SearchNode checkedNode = new SearchNode(tempNode, s, 
-									tempNode.getCost() + 1);//cos of tempNode to checkedNode.);//h
-
-					//just give up the repeated node is correct??
-					boolean isRepeated = checkRepeats_byclosedset(checkedNode);
-					//boolean isRepeated = checkRepeats(checkedNode);
-					
-					System.out.println("For: isRepeated="+isRepeated);
-					if (isRepeated) continue;
-					
-					if (!checkExist_InOpenset(checkedNode)) {
-						openSetQueue.add(checkedNode);
+						boolean isRepeated = checkRepeats(tempNode, s);
+						
+						//System.out.println("For: isRepeated="+isRepeated);
+						if (isRepeated) continue;
+						
+						SearchNode checkedNode = new SearchNode(tempNode, s, 
+									tempNode.getCost() + 1);//cos of tempNode to checkedNode.);
+								
+						//just give up the repeated node is correct??
+						//boolean isRepeated = checkRepeats_byclosedset(checkedNode);
+												
+						if (!checkExist_InOpenset(checkedNode)) {
+							openSetQueue.add(checkedNode);
+						}
+						else {
+							//System.out.println("For: checkedNode.gcost="+checkedNode.getCost());
+							//closedSet.add(checkedNode);
+						}
 					}
 				}
 
@@ -103,51 +122,54 @@ public class AStarSearch {
 			{
 				// Use a stack to track the path from the starting state to the
 				// goal state
-				Stack<SearchNode> solutionPath = new Stack<SearchNode>();
-				//solutionPath.push(tempNode);
-
-				//System.out.println("tempNode.parent=" + tempNode.parent);
+				//Stack<SearchNode> solutionPath = new Stack<SearchNode>();
+				StringBuffer sb = new StringBuffer();
+				SearchNode leave = tempNode;
 				while (tempNode.parent != null)
 				{
-					solutionPath.push(tempNode);
+					sb.append(tempNode.curState.from_direction);
+					//solutionPath.push(tempNode);
 					tempNode = tempNode.parent;
 					if (tempNode == null) 
 						break;
 				}
 				
 				if (tempNode != null) {
-					solutionPath.push(tempNode);
+					sb.append(tempNode.curState.from_direction);
+					//solutionPath.push(tempNode);
 				}
 
 				// The size of the stack before looping through and emptying it.
-				int loopSize = solutionPath.size();
 				/*
-				for (int i = 0; i < loopSize; i++)
-				{
-					tempNode = solutionPath.pop();
-					tempNode.curState.printState();
-					System.out.println();
-					System.out.println();
-				}
-				*/
+				int loopSize = solutionPath.size();
 				for (int i = 0; i < loopSize; i++)
 				{
 					tempNode = solutionPath.pop();
 					System.out.print(tempNode.curState.from_direction);
 				}
-				System.out.println();
-				root.curState.printStateInline();
-				System.out.println("Use asm_than_aso("+asm_and_aso+"), the cost was: " + tempNode.getCost());
+				*/
+				System.out.println(sb);
+
+				/* print result to file.
+				try {
+					FileOutputStream fos = new FileOutputStream("f:/result.txt", true);				
+					fos.write(sb.toString().getBytes());
+					fos.flush();
+					fos.close();
+				} catch(java.io.IOException e) {
+				} finally {
+				}*/
+				
+				//root.curState.printStateInline()
+				lowestSolution = leave.getCost();
+				System.out.println("Use asm_than_aso("+asm_and_aso+"), the cost was: " + lowestSolution);
 				if (d)
 				{
 					System.out.println("The number of nodes examined: "
 							+ searchCount);
-							
-					System.out.println("The number of repeated count: "
-							+ repeated_count);
 				}
 
-				System.exit(0);
+				//System.exit(0);
 			}
 		}
 
@@ -159,18 +181,17 @@ public class AStarSearch {
 	 * Helper method to check to see if a SearchNode has already been evaluated.
 	 * Returns true if it has, false if it hasn't.
 	 */
-	private static boolean checkRepeats(SearchNode n)
+	private static boolean checkRepeats(SearchNode sn, PuzzleState state)
 	{
 		boolean retValue = false;
-		SearchNode currentNode = n;
-
+		SearchNode n = sn;
+		
 		// While n's parent isn't null, check to see if it's equal to the node
 		// we're looking for.
 		while (n.parent != null && !retValue)
 		{
-			if (n.parent.curState.equals(currentNode.curState))
+			if (n.parent.curState.equals(state))
 			{
-				repeated_count++;
 				retValue = true;
 			}
 			n = n.parent;
@@ -209,7 +230,6 @@ public class AStarSearch {
 		for (int i = size - 1; i >= 0; i--) {
 			if (closedSet.get(i).curState.outOfPlace == outOfPlace && closedSet.get(i).curState.equals(currentNode.curState))
 			{
-				repeated_count++;
 				return true;
 			}
 		}

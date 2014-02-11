@@ -22,8 +22,27 @@ public class PuzzleState
 	public int outOfPlace = 0;
 	public int manDist = 0;
 	public int heuristic_cost = 1;//start to goal, not start to next.
-	public final int[] GOAL_4 = { 0, 2, 1, 2, 2, 1, 2, 1, 1, 2, 1, 2, 2, 1, 2, 1};
+	public final int[] GOAL0 = { 0, 2, 1, 2, 2, 1, 2, 1, 1, 2, 1, 2, 2, 1, 2, 1};//40
 
+	//#1
+	//public final int[] GOAL1 = { 1, 2, 2, 2, 0, 1, 2, 2, 1, 1, 1, 2, 1, 1, 2, 2};//7
+	
+	//#2
+	//public final int[] GOAL2 = { 2, 2, 2, 2, 1, 0, 1, 2, 1, 1, 1, 2, 1, 1, 2, 2};//12
+	
+	//#3
+	//public final int[] GOAL3 = { 2, 2, 1, 2, 2, 1, 1, 0, 1, 1, 2, 2, 1, 1, 2, 2};//18
+	
+	//#4
+	//RDLDDRRULLLDRRRULLDRR
+	//Use asm_than_aso(false), the cost was: 21.0
+	//public final int[] GOAL4 = { 2, 2, 1, 2, 2, 1, 2, 1, 1, 1, 1, 2, 1, 2, 0, 2};//21
+	
+	//#5
+	//RDLDDRRULLLDRRRULLDRR
+	//Use asm_than_aso(false), the cost was: 21.0
+	//public final int[] GOAL5 = { 2, 2, 1, 2, 2, 1, 2, 1, 1, 1, 2, 2, 1, 2, 1, 0};//24
+	
 	public char from_direction;
 	public int[] curBoard;
 	
@@ -49,7 +68,7 @@ public class PuzzleState
 	{
 		for (int i = 0; i < curBoard.length; i++)
 		{
-			if (curBoard[i] != GOAL_4[i])
+			if ( /*curBoard[i] != 0 && */curBoard[i] != GOAL0[i])
 			{
 				outOfPlace++;
 			}
@@ -159,10 +178,25 @@ public class PuzzleState
 	 */
 	public boolean isGoal()
 	{
-		if (Arrays.equals(curBoard, GOAL_4)) {
-			return true;
+		boolean result = false;
+		//full board meet.
+		if (Arrays.equals(curBoard, GOAL0)) {
+			result = true;
 		}
-		return false;
+		
+		/*
+		//right-bottom meet
+		if (curBoard[2] == GOAL_4[2] && curBoard[3] == GOAL_4[3]) {
+			result = true;
+			for (int i = 6; i <= 15; i++) {
+				if (curBoard[i] != GOAL_4[i]) {
+					result = false;
+					break;
+				}
+			}
+		}
+		*/
+		return result;
 	}
 
 	public void printStateInline() {
